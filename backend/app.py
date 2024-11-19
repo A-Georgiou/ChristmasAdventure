@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import replicate
+from dotenv import load_dotenv
 import os
 from functools import lru_cache
 import google.generativeai as genai
@@ -7,6 +8,7 @@ import typing_extensions as typing
 from dataclasses import dataclass
 from enum import Enum
 import json
+from flask_cors import CORS
 
 class StoryPhase(Enum):
     BEGINNING = "beginning"
@@ -15,31 +17,47 @@ class StoryPhase(Enum):
 
 @dataclass
 class StoryState:
-    node_count: int = 0
-    MAX_NODES: int = 8
-    phase: StoryPhase = StoryPhase.BEGINNING
+    def __init__(self, node_count):
+        self.node_count: int = node_count
+        self.MAX_NODES: int = 5
+        self.phase = StoryPhase.BEGINNING
+        self.set_phase()
 
     def should_conclude(self) -> bool:
         return self.node_count >= self.MAX_NODES
 
     def increment_node(self) -> None:
         self.node_count += 1
+        self.set_phase()
+        
+    def set_phase(self) -> StoryPhase:
         if self.node_count >= self.MAX_NODES:
             self.phase = StoryPhase.CONCLUSION
-        elif self.node_count > 3:
+        elif self.node_count >= 3:
             self.phase = StoryPhase.MIDDLE
+        else:
+            self.phase = StoryPhase.BEGINNING
 
 class ChristmasStory(typing.TypedDict):
     story: str
-    choices: list[str]
     image_prompt: str
+
+class ChristmasChoices(typing.TypedDict):
+    choice: list[str]
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash",
+story_model = genai.GenerativeModel(
+  model_name="gemini-1.5-flash-002",
   generation_config=genai.GenerationConfig(
         response_mime_type="application/json", response_schema=ChristmasStory
+    ),
+)
+
+choices_model = genai.GenerativeModel(
+  model_name="gemini-1.5-flash-002",
+  generation_config=genai.GenerationConfig(
+        response_mime_type="application/json", response_schema=ChristmasChoices
     ),
 )
 
@@ -59,25 +77,20 @@ def generate_final_story_prompt(story_so_far, chosen_choice):
     text_prompt = """
         You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
-        Each scene should build tension while maintaining a magical, hopeful tone.
-        This is the final prompt, wrap up the story in a satisfying way that resolves the mystery of Santa's disappearance.
+        This is the final scene, wrap up the story in a satisfying way that resolves the mystery of Santa's disappearance.
+        Narrate the conclusion with a hopeful and magical tone.
         Congratulate the player on their bravery and resourcefulness in saving Christmas.
 
         Each response must include:
         1. A vivid scene description (around 250 words) that:
-        - Resolves the mystery of Santa's disappearance
-        - Includes magical Christmas elements
-        - Describes the North Pole environment
+        - Resolves the mystery of Santa's disappearance.
+        - Includes a heartwarming reunion with Santa.
         - Reflects the player's final choice.
+        - Keep the language clean and simple.
 
-        2. Exactly 3 distinct choices for what to do next, each:
-        - Starting with an action verb
-        - Relating to investigating Santa's disappearance
-        - Staying within this area of the north pole and ending the story.
-
-        3. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
-        - Focuses on the main visual elements of the scene
-        - Describes only the key characters and core scene elements
+        2. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
+        - Focuses on the main visual elements of the scene.
+        - Describes only the key characters and core scene elements.
         - Emphasizes the magical Christmas atmosphere
         - Uses clear, specific visual language
 
@@ -90,43 +103,52 @@ def generate_next_story_prompt(story_so_far, chosen_choice):
     text_prompt = """
         You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
-        Each scene should build tension while maintaining a magical, hopeful tone.
+        Narrate the conclusion with a hopeful and magical tone.
+       
+       1. A vivid scene description (around 250 words) that:
+       - Use simple language for children
+       - Only add details that will be used in ALL THREE choices
+       - Maximum of 3-4 key elements (objects, clues, locations) that need investigation
 
-        Each response must include:
-        1. A vivid scene description (around 100 words) that:
-        - Advances the search for Santa
-        - Includes magical Christmas elements
-        - Describes the North Pole environment
-        - Hints at possible clues about Santa's whereabouts
-        - Concise and engaging to keep the player invested
-
-        2. Exactly 3 distinct choices for what to do next, each:
-        - Starting with an action verb
-        - Relating to investigating Santa's disappearance
-        - Leading to different areas of the North Pole or following different clues
-
-        3. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
-        - Focuses on the main visual elements of the scene
-        - Describes only the key characters and core scene elements
+       3. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
+        - Focuses on the main visual elements of the scene.
+        - Describes only the key characters and core scene elements.
         - Emphasizes the magical Christmas atmosphere
         - Uses clear, specific visual language
 
-        Here is the story so far:
+       Here is the story so far:
     """
 
     return f"{text_prompt} {story_so_far} The player has decided to do the following choice: {chosen_choice}."
 
+def generate_choices_prompt(story_response):
+    return f"""
+        You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
+        Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
+        
+        You must provide 3 distinct choices for what the player can do next, each:
+       - Must ONLY use elements from the scene.
+       - Must start with action words.
+
+        Here is the scene you must base your choices on:
+        {story_response}
+    """
+
 def generate_story_segment(story_so_far: str, chosen_choice: str, story_state: StoryState) -> ChristmasStory:
-    """Generate next story segment based on current state"""
-    
     if story_state.phase == StoryPhase.CONCLUSION:
-        prompt = generate_final_story_prompt(story_so_far, chosen_choice)
+        story_prompt = generate_final_story_prompt(story_so_far, chosen_choice)
     else:
-        prompt = generate_next_story_prompt(story_so_far, chosen_choice)
+        story_prompt = generate_next_story_prompt(story_so_far, chosen_choice)
         if story_state.phase == StoryPhase.MIDDLE:
-            prompt += "\nStart building towards a conclusion as the search for Santa intensifies."
-    response = model.generate_content(prompt)
-    story_data = json.loads(response.text)
+            story_prompt += "\nStart building towards a conclusion as the search for Santa intensifies."
+        if story_state.node_count == story_state.MAX_NODES - 2:
+            story_prompt += "\nAdd in a major twist or reveal that sets up the final scene."
+    story_response = story_model.generate_content(story_prompt)
+    story_data = json.loads(story_response.text)
+    choices_prompt = generate_choices_prompt(story_data['story'])
+    choices = choices_model.generate_content(choices_prompt)
+    choices_data = json.loads(choices.text)
+    story_data['choices'] = choices_data['choice']
     story_state.increment_node()
     
     return story_data
@@ -144,6 +166,9 @@ def save_image(output):
     for index, item in enumerate(output):
         with open(f"output_{index}.webp", "wb") as file:
             file.write(item.read())
+
+app = Flask(__name__)
+CORS(app)
 
 @app.route('/api/continue_story', methods=['POST'])
 def continue_story():
@@ -168,5 +193,3 @@ def continue_story():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-app = Flask(__name__)

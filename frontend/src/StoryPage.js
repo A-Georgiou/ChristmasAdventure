@@ -3,11 +3,12 @@ import InitialImage from './static/initial/workshop.webp';
 import { storyApi } from './api/storyAPI.js';
 
 const StoryPage = () => {
-  const [nodeCount, setCurrentNode] = useState(0);
+  const [nodeCount, setNodeCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentStory, setCurrentStory] = useState("Tiny snowflakes dance in the moonlight as you sprinkle your morning pixie dust on the toy-making machines. But something magical is missing... Santa's workshop isn't glowing with its usual golden warmth. His special chair sits empty, his magical compass lies silent on his desk, and the bells on his hat aren't tinkling their morning melody. You flutter your pointy ears, sensing that something isn't right. As Santa's most trusted elf, keeper of special Christmas secrets, you know in your heart that he needs your help. Christmas magic sparkles around you as you consider where to look...");
   const [currentDisplay, setCurrentDisplay] = useState(currentStory);
   const [currentImage, setCurrentImage] = useState(InitialImage);
+  const [isConclusion, setIsConclusion] = useState(false);
 
   const [choices, setChoices] = useState([
     "Visit The Reindeer Stables. Dasher and Blitzen are acting strange, staring at the Frozen Forest. They might know something...",
@@ -26,10 +27,11 @@ const StoryPage = () => {
       });
       
       setCurrentStory(response.story);
+      setCurrentDisplay(response.story);
       setChoices(response.choices);
       setNodeCount(response.node_count);
-      setIsConclusion(response.is_conclusion);
       setCurrentImage(response.image_url);
+      setIsConclusion(response.is_conclusion);
     } catch (error) {
         console.error('Story API Error:', error);
     } finally {

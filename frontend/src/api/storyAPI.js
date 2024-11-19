@@ -8,7 +8,7 @@ export const storyApi = {
         choice: storyData.choice,
         node_count: storyData.nodeCount
       });
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Story API Error:', error);
       throw error;

@@ -6,8 +6,8 @@ const StoryPage = () => {
   const [currentDisplay, setCurrentDisplay] = useState(currentStory);
 
   const [choices, setChoices] = useState([
-    "Visit The Reindeer Stables. Dasher and Blitzen are acting strange, staring at the Frozen Forest. They might know something.",
-    "Visit The Magical Map Room. Santa's enchanted atlas is glowing under his door!",
+    "Visit The Reindeer Stables. Dasher and Blitzen are acting strange, staring at the Frozen Forest. They might know something...",
+    "Visit The Magical Map Room. Santa's enchanted atlas is glowing under his door...",
     "Visit The Workshop's Secret Tower. In the distance you can hear the sound of Christmas bells calling your name..."
   ]);
 
@@ -17,7 +17,7 @@ const StoryPage = () => {
             <div className="relative w-80 h-80 mx-auto rounded-lg overflow-hidden shadow-2xl">
                 <img 
                     src={loadingImage}
-                    alt="Christmas Story Scene" 
+                    alt="Christmas Story" 
                     className="w-full h-full object-cover"
                 />
             </div>

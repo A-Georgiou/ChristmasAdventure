@@ -21,7 +21,7 @@ class StoryPhase(Enum):
 class StoryState:
     def __init__(self, node_count):
         self.node_count: int = node_count
-        self.MAX_NODES: int = 5
+        self.MAX_NODES: int = 5 # Number of nodes in the story before it concludes.
         self.phase = StoryPhase.BEGINNING
         self.set_phase()
 

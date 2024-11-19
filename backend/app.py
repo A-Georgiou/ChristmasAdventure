@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import Enum
 import json
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 class StoryPhase(Enum):
     BEGINNING = "beginning"
@@ -164,9 +166,15 @@ def save_image(output):
             file.write(item.read())
 
 app = Flask(__name__)
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["30 per day"]
+)
 CORS(app)
 
 @app.route('/api/continue_story', methods=['POST'])
+@limiter.limit("30 per day")
 def continue_story():
     data = request.json
     story_so_far = data.get('story_so_far', '')
@@ -190,3 +198,7 @@ def continue_story():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({'error': 'Rate limit exceeded'}), 429

@@ -145,7 +145,7 @@ def save_image(output):
         with open(f"output_{index}.webp", "wb") as file:
             file.write(item.read())
 
-@app.route('/continue_story', methods=['POST'])
+@app.route('/api/continue_story', methods=['POST'])
 def continue_story():
     data = request.json
     story_so_far = data.get('story_so_far', '')

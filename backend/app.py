@@ -67,7 +67,7 @@ def create_image_prompt(story_data, story_state):
     
     Artistic style: Detailed digital art, warm lighting, festive colors, magical atmosphere, 
     similar to Disney concept art meets classic Christmas illustrations.
-    High quality, highly detailed, warm lighting, Christmas sparkle, 4k
+    High quality, highly detailed, warm lighting, Christmas sparkle, 4k, focus on environmental elements.
     """
 
     cleaned_prompt = " ".join(base_prompt.split())
@@ -82,17 +82,15 @@ def generate_final_story_prompt(story_so_far, chosen_choice):
         Congratulate the player on their bravery and resourcefulness in saving Christmas.
 
         Each response must include:
-        1. A vivid scene description (around 250 words) that:
+        1. A vivid scene description (around 200 words) that:
         - Resolves the mystery of Santa's disappearance.
         - Includes a heartwarming reunion with Santa.
         - Reflects the player's final choice.
-        - Keep the language clean and simple.
 
         2. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
         - Focuses on the main visual elements of the scene.
         - Describes only the key characters and core scene elements.
         - Emphasizes the magical Christmas atmosphere
-        - Uses clear, specific visual language
 
         Here is the story so far:
         """
@@ -103,18 +101,18 @@ def generate_next_story_prompt(story_so_far, chosen_choice):
     text_prompt = """
         You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
-        Narrate the conclusion with a hopeful and magical tone.
        
-       1. A vivid scene description (around 250 words) that:
+       1. A vivid scene description (around 100 words) that:
        - Use simple language for children
        - Only add details that will be used in ALL THREE choices
        - Maximum of 3-4 key elements (objects, clues, locations) that need investigation
+       - Focus on describing the environment and magical elements
 
        3. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
         - Focuses on the main visual elements of the scene.
         - Describes only the key characters and core scene elements.
         - Emphasizes the magical Christmas atmosphere
-        - Uses clear, specific visual language
+        - Avoid including Santa or his likeness in the scene
 
        Here is the story so far:
     """
@@ -127,10 +125,10 @@ def generate_choices_prompt(story_response):
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
         
         You must provide 3 distinct choices for what the player can do next, each:
-       - Must ONLY use elements from the scene.
-       - Must start with action words.
+        - Must ONLY use elements from the scene.
+        - Must start with action words.
 
-        Here is the scene you must base your choices on:
+        Here is the scene you must extract your choices from:
         {story_response}
     """
 
@@ -141,16 +139,14 @@ def generate_story_segment(story_so_far: str, chosen_choice: str, story_state: S
         story_prompt = generate_next_story_prompt(story_so_far, chosen_choice)
         if story_state.phase == StoryPhase.MIDDLE:
             story_prompt += "\nStart building towards a conclusion as the search for Santa intensifies."
-        if story_state.node_count == story_state.MAX_NODES - 2:
-            story_prompt += "\nAdd in a major twist or reveal that sets up the final scene."
+        if story_state.node_count == story_state.MAX_NODES - 1:
+            story_prompt += "\nAdd in a major twist or reveal that sets up the finale of this story."
     story_response = story_model.generate_content(story_prompt)
     story_data = json.loads(story_response.text)
     choices_prompt = generate_choices_prompt(story_data['story'])
     choices = choices_model.generate_content(choices_prompt)
     choices_data = json.loads(choices.text)
     story_data['choices'] = choices_data['choice']
-    story_state.increment_node()
-    
     return story_data
 
 @lru_cache(maxsize=100)
@@ -177,6 +173,7 @@ def continue_story():
     chosen_choice = data.get('choice', '')
     node_count = data.get('node_count', 0)
     story_state = StoryState(node_count=node_count)
+    story_state.increment_node()
     
     try:
         story_data = generate_story_segment(story_so_far, chosen_choice, story_state)

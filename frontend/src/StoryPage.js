@@ -64,16 +64,16 @@ const StoryPage = () => {
             </div>
             {isConclusion ? (
               <div className="space-y-2">
-                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-center">
+                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
                     <p className="text-gray-300 text-lg leading-relaxed font-serif font-bold">
                         You found Santa Clause! Christmas is saved! 🎅🎄🎁
                     </p>
                 </div>
-                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-center">
-                <p className="text-gray-300 text-lg leading-relaxed font-serif">
-                  View your full story below:&nbsp;
+                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
+                <div className="text-gray-300 text-lg leading-relaxed font-serif white-spaced-text">
+                  <b>View your full story below:&nbsp;</b><br/>
                   {currentStory}
-                </p>
+                </div>
                 </div>
               </div>
             ) : (

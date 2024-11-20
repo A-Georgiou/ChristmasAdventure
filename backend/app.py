@@ -42,10 +42,10 @@ class StoryState:
 
 class ChristmasStory(typing.TypedDict):
     story: str
-    image_prompt: str
 
 class ChristmasChoices(typing.TypedDict):
     choice: list[str]
+    image_prompt: str
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
@@ -84,15 +84,10 @@ def generate_final_story_prompt(story_so_far, chosen_choice):
         Congratulate the player on their bravery and resourcefulness in saving Christmas.
 
         Each response must include:
-        1. A vivid scene description (around 200 words) that:
+        A vivid scene description (around 200 words) that:
         - Resolves the mystery of Santa's disappearance.
         - Includes a heartwarming reunion with Santa.
         - Reflects the player's final choice.
-
-        2. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
-        - Focuses on the main visual elements of the scene.
-        - Describes only the key characters and core scene elements.
-        - Emphasizes the magical Christmas atmosphere
 
         Here is the story so far:
         """
@@ -104,17 +99,11 @@ def generate_next_story_prompt(story_so_far, chosen_choice):
         You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
        
-       1. A vivid scene description (around 100 words) that:
+       You must write a vivid scene description (around 100 words) that:
        - Use simple language for children
        - Only add details that will be used in ALL THREE choices
        - Maximum of 3-4 key elements (objects, clues, locations) that need investigation
        - Focus on describing the environment and magical elements
-
-       3. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
-        - Focuses on the main visual elements of the scene.
-        - Describes only the key characters and core scene elements.
-        - Emphasizes the magical Christmas atmosphere
-        - Avoid including Santa or his likeness in the scene
 
        Here is the story so far:
     """
@@ -126,9 +115,14 @@ def generate_choices_prompt(story_response):
         You are narrating an urgent Christmas adventure where Santa has mysteriously disappeared just days before Christmas.
         Write in second person ("you") perspective as one of Santa's trusted elves trying to find him.
         
-        You must provide 3 distinct choices for what the player can do next, each:
+        1. You must provide 3 distinct choices for what the player can do next, each:
         - Must ONLY use elements from the scene.
         - Must start with action words.
+
+        2. "image_prompt": A concise 2-3 sentence prompt for generating an illustration that:
+        - Focuses on the main visual elements of the scene.
+        - Describes only the key characters and core scene elements.
+        - Emphasizes the magical Christmas atmosphere.
 
         Here is the scene you must extract your choices from:
         {story_response}
@@ -149,6 +143,7 @@ def generate_story_segment(story_so_far: str, chosen_choice: str, story_state: S
     choices = choices_model.generate_content(choices_prompt)
     choices_data = json.loads(choices.text)
     story_data['choices'] = choices_data['choice']
+    story_data['image_prompt'] = choices_data['image_prompt']
     return story_data
 
 @lru_cache(maxsize=100)

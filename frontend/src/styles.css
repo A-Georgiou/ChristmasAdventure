@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.white-spaced-text{
+    white-space: pre-line;
+}

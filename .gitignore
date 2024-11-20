@@ -4,3 +4,4 @@ dist/
 __pycache__
 christmas_backend/
 .env
+.DS_Store

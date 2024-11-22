@@ -2,7 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-
-.white-spaced-text{
+.white-spaced-text {
     white-space: pre-line;
+}
+
+.story-image-container {
+    @apply relative rounded-lg overflow-hidden shadow-2xl;
+    width: 100%;
+    aspect-ratio: 1/1; 
+}
+
+@media screen and (min-width: 800px) {
+    .story-image-container {
+        margin-left: auto;
+        margin-right: auto;
+        width: 350px;
+        height: 350px;
+    }
+}
+
+/* 1080p */
+@media screen and (min-width: 1200px) and (max-width: 1999px) {
+    .story-image-container {
+        width: 350px;
+        height: 350px;
+    }
+}
+
+/* 1440p */
+@media screen and (min-width: 2200px) and (max-width: 2999px) {
+    .story-image-container {
+        width: 550px;
+        height: 550px;
+    }
+
+    .page-story-container {
+        max-width: 80rem;
+        margin-top: 2rem;
+        gap: 2rem;
+    }
+
+    .story-text {
+        font-size: 1.5rem;
+    }
+}
+
+/* 4K */
+@media screen and (min-width: 3000px) {
+    .story-image-container {
+        width: 1000px;
+        height: 1000px;
+    }
+    
+    .page-story-container {
+        max-width: 120rem;
+        margin-top: 4rem;
+        gap: 3rem;
+    }
+
+    .story-text {
+        font-size: 2rem;
+    }
+
+
+    .page-story-container {
+        --tw-space-y-reverse: 0;
+        margin-top: calc(3rem * calc(1 - var(--tw-space-y-reverse)));
+        margin-bottom: calc(3rem * var(--tw-space-y-reverse));
+    }
+
+    .page-story-container button {
+        padding: 2rem 3rem;
+    }
+
+    .page-story-container .grid {
+        gap: 2rem;
+    }
 }

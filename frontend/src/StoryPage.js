@@ -45,49 +45,51 @@ const StoryPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-            <div className="relative w-80 h-80 mx-auto rounded-lg overflow-hidden shadow-2xl">
-                <img 
-                    src={currentImage}
-                    alt="Christmas Story" 
-                    className="w-full h-full object-cover"
-                    onError={() => {
-                        setImageError(true);
-                        setCurrentImage(InitialImage);
-                      }}
-                />
+      <div className="max-w-4xl mx-auto space-y-6 page-story-container">
+        <div className="story-image-container">
+          <img 
+            src={currentImage}
+            alt="Christmas Story" 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = InitialImage;
+              console.warn('Image not found, using default image instead.');
+            }}
+          />
+        </div>
+        
+        <div className="bg-gray-800 bg-opacity-90 rounded-2xl p-8 shadow-xl relative">
+          <p className="text-gray-300 story-text leading-relaxed font-serif">
+            {currentDisplay}
+          </p>
+        </div>
+        
+        {isConclusion ? (
+          <div className="space-y-2">
+            <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
+              <p className="text-gray-300 story-text leading-relaxed font-serif font-bold">
+                You found Santa Clause! Christmas is saved! 🎅🎄🎁
+              </p>
             </div>
-            <div className="bg-gray-800 bg-opacity-90 rounded-2xl p-8 shadow-xl relative">
-                <p className="text-gray-300 text-lg leading-relaxed font-serif">
-                    {currentDisplay}
-                </p>
+            <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
+              <div className="text-gray-300 story-text leading-relaxed font-serif white-spaced-text">
+                <b>View your full story below:&nbsp;</b><br/>
+                {currentStory}
+              </div>
             </div>
-            {isConclusion ? (
-              <div className="space-y-2">
-                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
-                    <p className="text-gray-300 text-lg leading-relaxed font-serif font-bold">
-                        You found Santa Clause! Christmas is saved! 🎅🎄🎁
-                    </p>
-                </div>
-                <div className="bg-red-900 bg-opacity-50 rounded-2xl p-8 shadow-xl relative text-left">
-                <div className="text-gray-300 text-lg leading-relaxed font-serif white-spaced-text">
-                  <b>View your full story below:&nbsp;</b><br/>
-                  {currentStory}
-                </div>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
-                {choices.map((choice, index) => (
-                    <button
-                    key={index}
-                    className="bg-red-900 bg-opacity-50 hover:bg-red-900 text-white font-small py-4 px-2 rounded-xl shadow-lg transition-all hover:transform hover:scale-105 active:scale-95"
-                    onClick={() => handleChoice(choice)}>
-                    {choice}
-                    </button>
-                ))}
-              </div>
-            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+            {choices.map((choice, index) => (
+              <button
+                key={index}
+                className="bg-red-900 bg-opacity-50 hover:bg-red-900 text-gray-300 font-serif story-text py-4 px-2 rounded-xl shadow-lg transition-all hover:transform hover:scale-105 active:scale-95"
+                onClick={() => handleChoice(choice)}>
+                {choice}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

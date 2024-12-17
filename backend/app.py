@@ -50,14 +50,14 @@ class ChristmasChoices(typing.TypedDict):
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 story_model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash-002",
+  model_name="gemini-1.5-flash",
   generation_config=genai.GenerationConfig(
         response_mime_type="application/json", response_schema=ChristmasStory
     ),
 )
 
 choices_model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash-002",
+  model_name="gemini-1.5-flash",
   generation_config=genai.GenerationConfig(
         response_mime_type="application/json", response_schema=ChristmasChoices
     ),
@@ -192,7 +192,9 @@ def continue_story():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        app.logger.error(f"Error occurred: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'An internal server error occurred'}), 500
 
 @app.errorhandler(429)
 def ratelimit_handler(e):

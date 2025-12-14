@@ -37,7 +37,7 @@ const StoryPage = () => {
       setCurrentImage(response.image_url);
       setIsConclusion(response.is_conclusion);
     } catch (error) {
-      // Error handling - could display user-friendly message
+      // Silent error handling - error is caught but not logged
     } finally {
       setLoading(false);
     }

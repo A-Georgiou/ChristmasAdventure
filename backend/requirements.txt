@@ -1,3 +1,6 @@
 flask
+flask-cors
+flask-limiter
+python-dotenv
 replicate
 google-generativeai

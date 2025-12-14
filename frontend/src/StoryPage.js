@@ -29,7 +29,7 @@ const StoryPage = () => {
       let newStory = currentStory + "\n\nYou chose to " + choice + ".\n\n" + response.story;
       setCurrentStory(newStory);
       setCurrentDisplay(response.story);
-      if (response.is_conslusion)
+      if (response.is_conclusion)
         setChoices([]);
       else
         setChoices(response.choices);
@@ -37,7 +37,7 @@ const StoryPage = () => {
       setCurrentImage(response.image_url);
       setIsConclusion(response.is_conclusion);
     } catch (error) {
-        console.error('Story API Error:', error);
+      // Error handling - could display user-friendly message
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,6 @@ const StoryPage = () => {
             className="w-full h-full object-cover"
             onError={(e) => {
               e.target.src = InitialImage;
-              console.warn('Image not found, using default image instead.');
             }}
           />
         </div>

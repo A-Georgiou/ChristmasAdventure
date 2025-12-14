@@ -11,6 +11,7 @@ import json
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import traceback
 
 class StoryPhase(Enum):
     BEGINNING = "beginning"
@@ -154,11 +155,6 @@ def generate_image(prompt):
         input=input
     )
     return output[0].url
-
-def save_image(output):
-    for index, item in enumerate(output):
-        with open(f"output_{index}.webp", "wb") as file:
-            file.write(item.read())
 
 app = Flask(__name__)
 limiter = Limiter(

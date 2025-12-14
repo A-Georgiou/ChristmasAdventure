@@ -10,7 +10,6 @@ export const storyApi = {
       });
       return response;
     } catch (error) {
-      console.error('Story API Error:', error);
       throw error;
     }
   }
